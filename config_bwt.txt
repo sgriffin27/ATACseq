@@ -1,4 +1,7 @@
-#number of CPUs
+#GENOME="/home/zlewis/Genomes/AfumagatisGenome/Af293_w_Cyp51Avariants/CM000172_withCyp51A_hph.fasta"
+#GENOME="/home/zlewis/Genomes/AfumagatisGenome/Af293_w_Cyp51Avariants/CM000172_withCyp51A_TR34.fasta"
+#GENOME="/home/zlewis/Genomes/AfumagatisGenome/Af293_w_Cyp51Avariants/CM000172_withCyp51A_TR46.fasta"
+#GENOME="/home/zlewis/Genomes/AfumagatisGenome/Af293_w_Cyp51Avariants/Af293wCyp51Avariants" #Aspergillus fumigatus with Cyp51A variants#number of CPUs
 THREADS=12
 
 #FASTQ should be the path to a folder containing all your zipped fastq files; filename endings should be fastq.gz
