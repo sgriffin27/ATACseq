@@ -1,14 +1,26 @@
+###Steps before running the script
+##(1) make sure this script, config_bwt.txt, and ATAC reads are in the same directory
+##(2) can only run one genome with corresponding samples at a time, so create separate folders for different types of samples 
+######## EXAMPLE:
+	#/scratch/seg75580/Run147/ATACFastQ/ATAC/TR34
+ 	#/scratch/seg75580/Run147/ATACFastQ/ATACseq/MapATACreads.sh
+  	#/scratch/seg75580/Run147/ATACFastQ/ATACseq/config_bwt.txt
+
+
+
+
+
 #!/bin/bash
 #SBATCH --job-name=Lewislab_ATAC.%j.job
 #SBATCH --partition=batch
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=ad45368@uga.edu
+#SBATCH --mail-user=seg75580@uga.edu
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=24
 #SBATCH --mem=100gb
 #SBATCH --time=48:00:00
-#SBATCH --output=./logs/bwtMapATAC.%j.out
-#SBATCH --error=./logs/ATAC.%j.err
+#SBATCH --output=bwtMapATAC.%j.out
+#SBATCH --error=ATAC.%j.err
 
 cd $SLURM_SUBMIT_DIR
 
@@ -16,13 +28,12 @@ cd $SLURM_SUBMIT_DIR
 
 source config_bwt.txt
 
-OUTDIR=/path/to/directory/${OutputFolderName}
+OUTDIR=/scratch/seg75580/bowtieSbatch/${OutputFolderName}
 mkdir ${OUTDIR}
 
-
 # #process reads using trimGalore
-# ml Trim_Galore/0.6.7-GCCcore-11.2.0
-# trim_galore --paired --length 20 --fastqc --gzip -o ${OUTDIR}/TrimmedReads ${FASTQ}/*fastq\.gz
+ ml Trim_Galore/0.6.7-GCCcore-11.2.0
+ trim_galore --paired --length 20 --fastqc --gzip -o ${OUTDIR}/TrimmedReads ${FASTQ}/*fastq\.gz
 
 FILES="${OUTDIR}/TrimmedReads/*R1_001_val_1\.fq\.gz" #Don't forget the *
 #
@@ -63,15 +74,15 @@ do
   bwt_bam="${OUTDIR}/SortedBamFiles/${name}.bam"
 
   deduped1="${OUTDIR}/SortedBamFiles/${name}_deduped.bam"
-  markeddupes="${OUTDIR}/Bowtie2/SortedBamFiles/${name}_marked_dup_metrics.txt"
+  markeddupes="${OUTDIR}/SortedBamFiles/${name}_marked_dup_metrics.txt"
 
-	shifted="${OUTDIR}/ShiftedBamFile/${name}.shifted.bam"
-  deduped2="${OUTDIR}/Bowtie2/FilteredBamFiles/${name}_shifted_deduped.bam"
+	shifted="${OUTDIR}/ShiftedBamFiles/${name}.shifted.bam"
+  deduped2="${OUTDIR}/FilteredBamFiles/${name}_shifted_deduped.bam"
 
-    # nfr="${OUTDIR}/SortedFilteredBamFiles/${name}_nfr.bam"
-    # mono="${OUTDIR}/SortedFilteredBamFiles/${name}_mono.bam"
-    # di="${OUTDIR}/SortedFilteredBamFiles/${name}_di.bam"
-    # tri="${OUTDIR}/SortedFilteredBamFiles/${name}_tri.bam"
+    nfr="${OUTDIR}/SortedFilteredBamFiles/${name}_nfr.bam"
+    mono="${OUTDIR}/SortedFilteredBamFiles/${name}_mono.bam"
+    di="${OUTDIR}/SortedFilteredBamFiles/${name}_di.bam"
+    tri="${OUTDIR}/SortedFilteredBamFiles/${name}_tri.bam"
 	#variable name for bigwig output
 	bwdir="${OUTDIR}/BigWigs"
 	#QualityBam="${OUTDIR}/SortedBamFiles/${name}_Q30.bam"
@@ -94,17 +105,17 @@ module load picard/2.27.5-Java-15
 # #
 java -jar $EBROOTPICARD/picard.jar MarkDuplicates \
      -I ${bwt_bam} \
-     -O ${bwt_deduped} \
+     -O ${deduped1} \
      -M ${markeddupes} \
      --REMOVE_DUPLICATES
-samtools index "$bwt_deduped"
+samtools index "$deduped1"
 
 #deeptools
 module load deepTools/3.5.2-foss-2022a
-alignmentSieve -p $THREADS --ATACshift --bam $bwt_deduped -o ${OUTDIR}/ShiftedBamFile/${name}.tmp.bam
+alignmentSieve -p $THREADS --ATACshift --bam $deduped1 -o ${OUTDIR}/ShiftedBamFiles/${name}.tmp.bam
 
 #the bam file needs to be sorted again
-samtools sort -@ $THREADS -O bam -o ${shifted} ${OUTDIR}/ShiftedBamFile/${name}.tmp.bam
+samtools sort -@ $THREADS -O bam -o ${shifted} ${OUTDIR}/ShiftedBamFiles/${name}.tmp.bam
 samtools index -@ $THREADS ${shifted}
 
 #rm ${name}.tmp.bam
@@ -159,3 +170,8 @@ macs3 hmmratac -b $deduped2 --outdir ${OUTDIR}/Peaks -n $name
 ### call atac peaks ###
 done
 ### merging replicates ###
+
+
+
+
+
