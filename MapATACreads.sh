@@ -7,9 +7,6 @@
   	#/scratch/seg75580/Run147/ATACFastQ/ATACseq/config_bwt.txt
 
 
-
-
-
 #!/bin/bash
 #SBATCH --job-name=Lewislab_ATAC.%j.job
 #SBATCH --partition=batch
@@ -28,8 +25,9 @@ cd $SLURM_SUBMIT_DIR
 
 source config_bwt.txt
 
-OUTDIR=/scratch/seg75580/bowtieSbatch/${OutputFolderName}
+OUTDIR=/scratch/seg75580/Run147/bowtieSbatch-cyp51A/${OutputFolderName}
 mkdir ${OUTDIR}
+
 
 # #process reads using trimGalore
  ml Trim_Galore/0.6.7-GCCcore-11.2.0
@@ -45,7 +43,7 @@ mkdir "${OUTDIR}/TrimmedReads"
  mkdir "${OUTDIR}/SortedBamFiles"
  mkdir "${OUTDIR}/ShiftedBamFiles"
  mkdir "${OUTDIR}/FilteredBamFiles"
-
+ mkdir "${OUTDIR}/SortedFilteredBamFiles"
  mkdir "${OUTDIR}/BigWigs"
  mkdir "${OUTDIR}/Peaks"
  mkdir "${OUTDIR}/logs"
@@ -58,34 +56,33 @@ mkdir "${OUTDIR}/TrimmedReads"
 for f in $FILES
 do
 #
-# 	#Examples to Get Different parts of the file name
-# 		#See here for details: http://tldp.org/LDP/abs/html/refcards.html#AEN22664
-		#${string//substring/replacement}
-# 		#dir=${f%/*}
+#       #Examples to Get Different parts of the file name
+#               #See here for details: http://tldp.org/LDP/abs/html/refcards.html#AEN22664
+                #${string//substring/replacement}
+#               #dir=${f%/*}
+       file=${f##*/}
+        #remove ending from file name to create shorter names for bam files and other downstream output
+        name=${file/%_R1_001_val_1.fq.gz/}
 
-	file=${f##*/}
-	#remove ending from file name to create shorter names for bam files and other downstream output
-	name=${file/%_R1_001_val_1.fq.gz/}
-
-# 	# File Vars
-# 	#use sed to get the name of the second read matching the input file
-	read2=$(echo "$file" | sed 's/_R1_001_val_1\.fq\.gz/_R2_001_val_2\.fq\.gz/g')
-  	#variable for naming bam file
+#       # File Vars
+#       #use sed to get the name of the second read matching the input file
+        read2=$(echo "$file" | sed 's/_R1_001_val_1\.fq\.gz/_R2_001_val_2\.fq\.gz/g')
+        #variable for naming bam file
   bwt_bam="${OUTDIR}/SortedBamFiles/${name}.bam"
 
   deduped1="${OUTDIR}/SortedBamFiles/${name}_deduped.bam"
   markeddupes="${OUTDIR}/SortedBamFiles/${name}_marked_dup_metrics.txt"
 
-	shifted="${OUTDIR}/ShiftedBamFiles/${name}.shifted.bam"
+        shifted="${OUTDIR}/ShiftedBamFiles/${name}.shifted.bam"
   deduped2="${OUTDIR}/FilteredBamFiles/${name}_shifted_deduped.bam"
 
-    nfr="${OUTDIR}/SortedFilteredBamFiles/${name}_nfr.bam"
-    mono="${OUTDIR}/SortedFilteredBamFiles/${name}_mono.bam"
-    di="${OUTDIR}/SortedFilteredBamFiles/${name}_di.bam"
-    tri="${OUTDIR}/SortedFilteredBamFiles/${name}_tri.bam"
-	#variable name for bigwig output
-	bwdir="${OUTDIR}/BigWigs"
-	#QualityBam="${OUTDIR}/SortedBamFiles/${name}_Q30.bam"
+     nfr="${OUTDIR}/SortedFilteredBamFiles/${name}_nfr.bam"
+         mono="${OUTDIR}/SortedFilteredBamFiles/${name}_mono.bam"
+     di="${OUTDIR}/SortedFilteredBamFiles/${name}_di.bam"
+     tri="${OUTDIR}/SortedFilteredBamFiles/${name}_tri.bam"
+        #variable name for bigwig output
+        bwdir="${OUTDIR}/BigWigs"
+     QualityBam="${OUTDIR}/SortedBamFiles/${name}_Q30.bam"
 
 ############ BWA Mapping #####################
 
@@ -96,10 +93,8 @@ ml BWA/0.7.17-GCCcore-11.3.0
 ### bowtie2 alignment -- works ###
 module load Bowtie2/2.5.2-GCC-11.3.0
 #
-bowtie2 -p $THREADS -q --local --very-sensitive -x $BWT_GENOME -1 ${OUTDIR}/TrimmedReads/$file -2 ${OUTDIR}/TrimmedReads/$read2 | samtools view -bhSu - | samtools sort -@ $THREADS -T $OUTDIR/Bowtie2/SortedBamFiles/tempReps -o "$bwt_bam" -
+bowtie2 -p $THREADS -q --local --very-sensitive -x $BWT_GENOME -1 ${OUTDIR}/TrimmedReads/$file -2 ${OUTDIR}/TrimmedReads/$read2 | samtools view -bhSu - | samtools sort $
 samtools index "$bwt_bam"
-
-
 ##removing duplicates ##
 module load picard/2.27.5-Java-15
 # #
@@ -126,7 +121,7 @@ module load Sambamba/0.8.2-GCC-11.3.0
 
 sambamba view -h -t $THREADS -f bam \
 -F "[XS] == null and not unmapped and not duplicate" \
-${shifted} > ${deduped2}
+ ${shifted} > ${deduped2}
 samtools index -@ $THREADS ${deduped2}
 
 #second filtering step to sort by fragment sizes#
@@ -134,9 +129,7 @@ sambamba view --format \
   bam --nthreads $THREADS \
   -F "((template_length > 0 and template_length < 100) or (template_length < 0 and template_length > -100))" $deduped2 | samtools view -b > $nfr
   samtools index -@ $THREADS ${nfr}
-
-
-  sambamba view --format \
+   sambamba view --format \
     bam --nthreads $THREADS \
     -F "((template_length > 100 and template_length < 200) or (template_length < -100 and template_length > -200))" $deduped2 | samtools view -b > $mono
     samtools index -@ $THREADS ${mono}
@@ -150,14 +143,12 @@ sambamba view --format \
         bam --nthreads $THREADS \
         -F "((template_length > 0 and template_length < 600) or (template_length < -400 and template_length > -600))" $deduped2 | samtools view -b > $tri
         samtools index -@ $THREADS ${tri}
-
-
-#Plot all reads
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${nfr} -o "${bwdir}/${name}.nfr.ATAC_bin_3.smooth_6_Bulk.bw"
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${mono} -o "${bwdir}/${name}.mono.ATAC_bin_3.smooth_6_Bulk.bw"
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${di} -o "${bwdir}/${name}.di.ATAC_bin_3.smooth_6_Bulk.bw"
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${tri} -o "${bwdir}/${name}.tri.ATAC_bin_3.smooth_6_Bulk.bw"
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b  ${deduped2} -o "${bwdir}/${name}.all.ATAC_bin_3.smooth_6_Bulk.bw"
+	#Plot all reads
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${nfr} -o "${bwdir}/${name}.nfr.ATAC_bin_3.smooth$
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${mono} -o "${bwdir}/${name}.mono.ATAC_bin_3.smoo$
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${di} -o "${bwdir}/${name}.di.ATAC_bin_3.smooth_6$
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${tri} -o "${bwdir}/${name}.tri.ATAC_bin_3.smooth$
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b  ${deduped2} -o "${bwdir}/${name}.all.ATAC_bin_3.$
 #
 
 module load MACS3/3.0.0b1-foss-2022a-Python-3.10.4
@@ -170,6 +161,17 @@ macs3 hmmratac -b $deduped2 --outdir ${OUTDIR}/Peaks -n $name
 ### call atac peaks ###
 done
 ### merging replicates ###
+
+
+
+
+
+
+
+
+
+
+
 
 
 
