@@ -93,8 +93,9 @@ ml BWA/0.7.17-GCCcore-11.3.0
 ### bowtie2 alignment -- works ###
 module load Bowtie2/2.5.2-GCC-11.3.0
 #
-bowtie2 -p $THREADS -q --local --very-sensitive -x $BWT_GENOME -1 ${OUTDIR}/TrimmedReads/$file -2 ${OUTDIR}/TrimmedReads/$read2 | samtools view -bhSu - | samtools sort $
+bowtie2 -p $THREADS -q --local --very-sensitive -x $BWT_GENOME -1 ${OUTDIR}/TrimmedReads/$file -2 ${OUTDIR}/TrimmedReads/$read2 | samtools view -bhSu - | samtools sort -@ $THREADS -T $OUTDIR/Bowtie2/SortedBamFiles/tempReps -o "$bwt_bam" -
 samtools index "$bwt_bam"
+
 ##removing duplicates ##
 module load picard/2.27.5-Java-15
 # #
@@ -144,11 +145,11 @@ sambamba view --format \
         -F "((template_length > 0 and template_length < 600) or (template_length < -400 and template_length > -600))" $deduped2 | samtools view -b > $tri
         samtools index -@ $THREADS ${tri}
 	#Plot all reads
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${nfr} -o "${bwdir}/${name}.nfr.ATAC_bin_3.smooth$
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${mono} -o "${bwdir}/${name}.mono.ATAC_bin_3.smoo$
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${di} -o "${bwdir}/${name}.di.ATAC_bin_3.smooth_6$
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${tri} -o "${bwdir}/${name}.tri.ATAC_bin_3.smooth$
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b  ${deduped2} -o "${bwdir}/${name}.all.ATAC_bin_3.$
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${nfr} -o "${bwdir}/${name}.nfr.ATAC_bin_3.smooth_6_Bulk.bw"
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${mono} -o "${bwdir}/${name}.mono.ATAC_bin_3.smooth_6_Bulk.bw"
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${di} -o "${bwdir}/${name}.di.ATAC_bin_3.smooth_6_Bulk.bw"
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b ${tri} -o "${bwdir}/${name}.tri.ATAC_bin_3.smooth_6_Bulk.bw"
+bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --minMappingQuality 20 --normalizeUsing BPM  -of bigwig -b  ${deduped2} -o "${bwdir}/${name}.all.ATAC_bin_3.smooth_6_Bulk.bw"
 #
 
 module load MACS3/3.0.0b1-foss-2022a-Python-3.10.4
