@@ -157,6 +157,7 @@ module load MACS3/3.0.0b1-foss-2022a-Python-3.10.4
 #
 macs3 hmmratac -b $deduped2 --outdir ${OUTDIR}/Peaks -n $name
 
+macs3 callpeak -t "${P141DIR}/141-N11_ATAC_WT__Rep1_S100.bam" -n "WT_ATAC_Rep1" --outdir "${OUTDIR2}/WT_ATAC_Rep1" -f BAMPE -g 41037538 -q 0.01 --nomodel --shift -75 --extsize 150 --keep-dup all –nolambda
 #plot mononucleosomes
 # ?\bamCoverage -p $THREADS --MNase -bs 1 --normalizeUsing BPM --smoothLength 25 -of bigwig -b "$bam" -o "${bigwig}.bin_${BIN}.smooth_${SMOOTH}_MNase.bw"
 ### call atac peaks ###
