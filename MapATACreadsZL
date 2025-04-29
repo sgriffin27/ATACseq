@@ -88,7 +88,7 @@ samtools index -@ $THREADS ${shifted}
 rm ${name}.tmp.bam
 
 #Plot all reads
-bamCoverage -p $THREADS --Offset 1 3 -bs 3 --smoothLength 6 --normalizeUsing BPM  -of bigwig -b ${shifted} -o "${bigwig}.ATAC_bin_3.smooth_6_Bulk.bw"
+bamCoverage -p $THREADS --Offset 1 1 -bs 1 --normalizeUsing BPM  -of bigwig -b ${shifted} -o "${bigwig}.ATAC_bin_3.Bulk.bw"
 
 #plot mononucleosomes
 #bamCoverage -p $THREADS --MNase -bs 1 --normalizeUsing BPM --smoothLength 25 -of bigwig -b "$bam" -o "${bigwig}.bin_${BIN}.smooth_${SMOOTH}_MNase.bw"
