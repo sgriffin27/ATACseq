@@ -1,4 +1,4 @@
-GENOME="/home/seg75580/AfuGenomes/GCF_000002655..1_ASM265v1_cyp51A.fasta"
+GENOME="/home/seg75580/AfuGenomes/GCF_000002655.1_ASM265v1_cyp51A.fasta"
 GENOME="/home/seg75580/AfuGenomes/GCF_000002655.1_ASM265v1_TR34.fasta"
 GENOME="/home/seg75580/AfuGenomes/GCF_000002655.1_ASM265v1_TR46.fasta"
 THREADS=12
