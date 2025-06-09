@@ -88,7 +88,7 @@ samtools index -@ $THREADS ${shifted}
 rm ${name}.tmp.bam
 
 #Plot all reads
-bamCoverage -p $THREADS --Offset 1 1 -bs 1 --normalizeUsing BPM  -of bigwig -b ${shifted} -o "${bigwig}.ATAC_bin_3.Bulk.bw"
+bamCoverage -p $THREADS --Offset 1 1 -bs 1 --normalizeUsing BPM  -of bigwig -b ${shifted} -o "${bigwig}.ATAC_bin_1.Bulk.bw"
 
 #bamCoverage -p $THREADS --MNase -bs 1 --normalizeUsing BPM --smoothLength 25 -of bigwig -b "$bam" -o "${bigwig}.bin_${BIN}.smooth_${SMOOTH}_MNase.bw"
 #module load MACS3/3.0.0b1-foss-2022a-Python-3.10.4
