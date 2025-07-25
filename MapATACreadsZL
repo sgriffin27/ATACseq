@@ -92,5 +92,6 @@ bamCoverage -p $THREADS --Offset 1 1 -bs 1 --normalizeUsing BPM  -of bigwig -b $
 
 #bamCoverage -p $THREADS --MNase -bs 1 --normalizeUsing BPM --smoothLength 25 -of bigwig -b "$bam" -o "${bigwig}.bin_${BIN}.smooth_${SMOOTH}_MNase.bw"
 #module load MACS3/3.0.0b1-foss-2022a-Python-3.10.4
+#macs3 callpeak -t $shifted -c ${OUTDIR}/SortedBamFiles/148-N6_ATAC_CEA17_gDNA__Rep1_S102_L003_R1_001_val_1.fq.gz.shifted.bam --format BAMPE --outdir ${OUTDIR}/reg_Peaks -n $name
 #macs3 callpeak -t "${OUTDIR}/SortedBamFiles/147-N16_Genomic_P5_SPF235a_TR46_cyp51A_hph__Rep_1_Af_.bam" --outdir "${OUTDIR}/Peaks" -f BAMPE -g 41037538 -q 0.01 --nomodel --shift -100 --extsize 200 --keep-dup all –nolambda
 done
