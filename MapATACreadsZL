@@ -67,6 +67,32 @@ ml BWA/0.7.17-GCCcore-11.3.0
 bwa mem -M -v 3 -a -t $THREADS $GENOME $f $read2 | samtools view -bhSu - | samtools sort -@ $THREADS -T $OUTDIR/SortedBamFiles/tempReps -o "$bam" -
 samtools index "$bam"
 
+############Abby's script#######################
+#module load picard/2.18.4-Java-1.8.0_241
+#java -jar picard.jar MarkDuplicates \
+#java -jar $EBROOTPICARD/picard.jar MarkDuplicates \
+    # I=${bam} \
+    # O=${deduped} \
+    # M=${OUTDIR}/SortedBamFiles/${name}_marked_dup_metrics.txt \
+    # REMOVE_DUPLICATES=TRUE
+#samtools index "$deduped"
+
+
+#java -jar $EBROOTPICARD/picard.jar CollectInsertSizeMetrics \
+    # I=${deduped} \
+    # O=${OUTDIR}/SortedBamFiles/${name}_collect_insert_size_metrics.txt \
+    # H=${OUTDIR}/SortedBamFiles/${name}_insert_size_histogram.pdf \
+    # M=0.5 \
+    # VALIDATION_STRINGENCY=LENIENT QUIET=TRUE VERBOSITY=ERROR
+
+#module load deepTools/3.5.5-gfbf-2023a
+#alignmentSieve -p $THREADS --ATACshift --bam $deduped -o ${OUTDIR}/ShiftedBamFiles/${name}.tmp.bam
+
+#samtools sort -@ $THREADS -O bam -o ${shifted} ${OUTDIR}/ShiftedBamFiles/${name}.tmp.bam
+#samtools index -@ $THREADS ${shifted}
+#############################################################
+
+
 #module load picard/2.27.4-Java-13.0.2
 
 #java -jar picard.jar MarkDuplicates \
@@ -89,12 +115,20 @@ rm ${name}.tmp.bam
 
 #Plot all reads
 bamCoverage -p $THREADS --Offset 1 1 -bs 1 --normalizeUsing BPM  -of bigwig -b ${shifted} -o "${bigwig}.ATAC_bin_1.Bulk.bw"
+bamCoverage -p $THREADS --Offset 1 25 -bs 25 --normalizeUsing BPM --smoothLength 75 -of bigwig -b ${shifted} -o "${bigwig}.ATAC_bin_25_smooth_75.bw"
 
-#bamCoverage -p $THREADS --MNase -bs 1 --normalizeUsing BPM --smoothLength 25 -of bigwig -b "$bam" -o "${bigwig}.bin_${BIN}.smooth_${SMOOTH}_MNase.bw"
+
+bamCoverage -p $THREADS --Offset 1 1 -bs 1 --normalizeUsing BPM  -of bigwig -b ${deduped} -o "${bigwig}.ATAC_bin_1.Bulk.bw"
+bamCoverage -p $THREADS --Offset 1 25 -bs 25 --normalizeUsing BPM --smoothLength 75 -of bigwig -b ${deduped} -o "${bigwig}.ATAC_bin_25_smooth_75.bw"
+
 module load module load MACS3/3.0.1-gfbf-2023a
+##doing all samples at once
+macs3 callpeak -t $deduped -c ${OUTDIR}/SortedBamFiles/${name}_deduped.bam --format BAMPE --outdir ${OUTDIR}/Peaks -n $name
+
 #macs3 callpeak -t $shifted -c ${OUTDIR}/SortedBamFiles/148-N6_ATAC_CEA17_gDNA__Rep1_S102_L003_R1_001_val_1.fq.gz.shifted.bam --format BAMPE --outdir ${OUTDIR}/reg_Peaks -n $name
 #macs3 callpeak -t "${OUTDIR}/SortedBamFiles/147-N16_Genomic_P5_SPF235a_TR46_cyp51A_hph__Rep_1_Af_.bam" --outdir "${OUTDIR}/Peaks" -f BAMPE -g 41037538 -q 0.01 --nomodel --shift -100 --extsize 200 --keep-dup all –nolambda
 #macs3 hmmratac -b $shifted --outdir ${OUTDIR}/hmmr_Peaks -n $name
+
 #when doing one sample at a time
 #macs3 callpeak -c ${OUTDIR}/SortedBamFiles/148-N6_ATAC_CEA17_gDNA__Rep1_S102_L003_R1_001_val_1.fq.gz.shifted.bam --format BAMPE --outdir ${OUTDIR}/reg_Peaks -n $name
 done
