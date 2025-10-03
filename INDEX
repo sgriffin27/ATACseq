@@ -1,0 +1,2 @@
+module load BWA/0.7.18-GCCcore-13.3.0
+bwa index FASTA FIlE
