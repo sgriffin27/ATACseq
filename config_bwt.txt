@@ -1,10 +1,16 @@
+#AfuGenomesTRUE
 GENOME="/home/seg75580/AfuGenomes/GCF_000002655.1_ASM265v1_cyp51A.fasta"
 GENOME="/home/seg75580/AfuGenomes/GCF_000002655.1_ASM265v1_TR34.fasta"
 GENOME="/home/seg75580/AfuGenomes/GCF_000002655.1_ASM265v1_TR46.fasta"
 THREADS=12
 
+#Af293 genome
+#GENOME="/home/seg75580/AfuGenomes/AF293_AspergillusFumagatis_GCF_000002655.1/GCF_000002655.1_ASM265v1_genomic.fna"
+#GENOME="/home/zlewis/Genomes/AfumagatisGenome/AspergillusFumagatis_GCF_000002655.1/Afumagatis_GCF_000002655.1"  #Aspergillus fumigatus AF293
+
 #FASTQ should be the path to a folder containing all your zipped fastq files; filename endings should be fastq.gz
 #do not end in "/"
+
 FASTQ="/scratch/seg75580/Run147/ATACFastQ/ATAC/Cyp51A"
 
 #Edit Code to add Q score option
