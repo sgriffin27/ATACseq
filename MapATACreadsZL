@@ -31,6 +31,7 @@ FILES="${OUTDIR}/TrimmedReads/*R1_001_val_1\.fq\.gz" #Don't forget the *
  mkdir "${OUTDIR}/BigWigs"
  mkdir "${OUTDIR}/Peaks"
  mkdir "${OUTDIR}/Beds"
+ mkdir "${OUTDIR}/Peaks/BroadPeaks"
 #mkdir "$OUTDIR/HomerTagDirectories"
 #mkdir "$OUTDIR/TdfFiles"
 #
@@ -132,6 +133,7 @@ macs3 callpeak -t $shifted -c ${OUTDIR}/SortedBamFiles/152-N8_Genomic_SPF94_TR34
 
 #macs3 callpeak -t "${OUTDIR}/SortedBamFiles/147-N16_Genomic_P5_SPF235a_TR46_cyp51A_hph__Rep_1_Af_.bam" --outdir "${OUTDIR}/Peaks" -f BAMPE -g 41037538 -q 0.01 --nomodel --shift -100 --extsize 200 --keep-dup all –nolambda
 #macs3 hmmratac -b $shifted --outdir ${OUTDIR}/hmmr_Peaks -n $name
+
 
 #when doing one sample at a time
 #macs3 callpeak -c ${OUTDIR}/SortedBamFiles/148-N6_ATAC_CEA17_gDNA__Rep1_S102_L003_R1_001_val_1.fq.gz.shifted.bam --format BAMPE --outdir ${OUTDIR}/reg_Peaks -n $name
